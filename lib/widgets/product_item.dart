@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/screens/product_detail_screen.dart';
 
 class ProductItem extends StatelessWidget {
   const ProductItem({
     Key? key,
     required this.id,
-    required this.title,
+    required this.price,
     required this.imageUrl,
   }) : super(key: key);
 
   final String id;
-  final String title;
+  final double price;
   final String imageUrl;
 
   @override
@@ -20,10 +21,10 @@ class ProductItem extends StatelessWidget {
       child: GridTile(
         footer: GridTileBar(
           title: Text(
-            title,
+            '$price',
             textAlign: TextAlign.center,
           ),
-          backgroundColor: Colors.black87,
+          backgroundColor: Colors.black54,
           leading: IconButton(
             icon: const Icon(
               Icons.favorite,
@@ -39,9 +40,17 @@ class ProductItem extends StatelessWidget {
             color: Theme.of(context).colorScheme.secondary,
           ),
         ),
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              ProductDetailScreen.routeName,
+              arguments: id,
+            );
+          },
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
