@@ -9,27 +9,28 @@ class ProductsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<Products>(context);
-    //Provider class allows us to set up a connection to one of the provided
-    //classes. It can only be used in a widget which has some direct or indirect
-    //parent widget which set up a provider.
+    final products = Provider.of<Products>(context).items;
+    //Provider class allows us to set up a connection to one of the provided classes.
+    //It can only be used in a widget which has some direct or indirect parent
+    //widget which set up a provider.
     //With this class, we can listen to the changes in the provided object.
     //Only the build method of the widget where we are using Provider.of() is rebuilt
     //whenever the object we are listening to changes.
-    final products = productsData.items;
     return GridView.builder(
       padding: const EdgeInsets.all(10),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 3 / 2,
+        childAspectRatio: 2 / 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
       itemBuilder: (ctx, i) {
-        return ProductItem(
-          id: products[i].id,
-          price: products[i].price,
-          imageUrl: products[i].imageUrl,
+        return ChangeNotifierProvider.value(
+          //this is an alternative syntax of the ChangeNotifierProvider class
+          //if the returned object does not depend on context.
+          //Use this approach whenever we reuse an existing object.
+          value: products[i],
+          child: const ProductItem(),
         );
       },
       itemCount: products.length,

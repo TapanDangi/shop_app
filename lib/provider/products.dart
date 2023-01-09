@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../models/product.dart';
+import './product.dart';
 
 class Products with ChangeNotifier {
   final List<Product> _items = [
+    //when anywhere in the code _items is accessed through the Products class,
+    //then we get the direct access to the _items list and we can modify it
+    //from anywhere else. So it is put as a private object.
     Product(
       id: 'p1',
       title: 'Red Shirt',
@@ -37,9 +40,6 @@ class Products with ChangeNotifier {
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     ),
   ];
-  //when anywhere in the code _items is accessed through the Products class,
-  //then we get the direct access to the _items list and we can modify it
-  //from anywhere else. So it is put as a private object.
 
   List<Product> get items {
     return [..._items];
@@ -49,12 +49,16 @@ class Products with ChangeNotifier {
   //since _items is a private object, getter method is used if we have to use
   //the _items list in another file.
 
+  Product findById(String id) {
+    return _items.firstWhere((element) => element.id == id);
+  }
+
   void addProduct() {
     //_items.add();
     notifyListeners();
-    //this method is given by ChangeNotifier mixin
+    //this method is given by ChangeNotifier mixin.
     //this establishes a communication channel between this class and widgets
-    //that are interested in the updates we did. The widgets that are listening
-    //to this class are then rebuilt to get the latest data.
+    //that are interested in the updates we did.
+    //The widgets that are listening to this class are then rebuilt to get the latest data.
   }
 }

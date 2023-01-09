@@ -16,14 +16,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       //allows us to register a class to which we can listen in child widgets and
-      //whenever that class updates, only he widgets that are listening are rebuilt
+      //whenever that class updates, only the widgets that are listening are rebuilt
+      //Use this approach whenever a new object based on the class is created.
       create: (ctx) => Products(),
       child: MaterialApp(
         title: 'MyShop',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.purple,
-            accentColor: Colors.deepOrange,
+            accentColor: Colors.amber,
           ),
           fontFamily: 'Lato',
         ),
