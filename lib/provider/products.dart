@@ -49,6 +49,10 @@ class Products with ChangeNotifier {
   //since _items is a private object, getter method is used if we have to use
   //the _items list in another file.
 
+  List<Product> get favItems {
+    return _items.where((element) => element.isFavorite).toList();
+  }
+
   Product findById(String id) {
     return _items.firstWhere((element) => element.id == id);
   }

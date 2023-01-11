@@ -5,11 +5,14 @@ import '../widgets/product_item.dart';
 import '../provider/products.dart';
 
 class ProductsGrid extends StatelessWidget {
-  const ProductsGrid({Key? key}) : super(key: key);
+  const ProductsGrid({Key? key, required this.showFavorites}) : super(key: key);
+
+  final bool showFavorites;
 
   @override
   Widget build(BuildContext context) {
-    final products = Provider.of<Products>(context).items;
+    final productsData = Provider.of<Products>(context);
+    final products = showFavorites ? productsData.favItems : productsData.items;
     //Provider class allows us to set up a connection to one of the provided classes.
     //It can only be used in a widget which has some direct or indirect parent
     //widget which set up a provider.
