@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/products_grid.dart';
+import '../widgets/badge.dart';
+import '../provider/cart.dart';
 
 enum FilterOptions {
   favorites,
@@ -44,6 +47,23 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
                 child: Text('Show All!'),
               ),
             ],
+          ),
+          Consumer<Cart>(
+            //Consumer class is similar to provider class but it is used on
+            //individual widgets when we don't want to affect the entire widget
+            //tree of that widget to be re-built everytime the list updates.
+            builder: (_, cart, ch) => Badge(
+              value: cart.itemCount.toString(),
+              child: ch as Widget,
+            ),
+            child: IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.shopping_cart,
+              ),
+            ),
+            //this IconButton is defined outside of builder function so that it
+            //won't be rebuilt when the value parameter in builder function changes.
           ),
         ],
       ),

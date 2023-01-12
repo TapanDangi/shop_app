@@ -3,13 +3,15 @@ import 'package:provider/provider.dart';
 
 import '../screens/product_detail_screen.dart';
 import '../provider/product.dart';
+import '../provider/cart.dart';
 
 class ProductItem extends StatelessWidget {
   const ProductItem({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Product>(context);
+    final productData = Provider.of<Product>(context, listen: false);
+    final cartData = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
       //forces the child widget to wrap into a certain shape
       borderRadius: BorderRadius.circular(10),
@@ -33,7 +35,10 @@ class ProductItem extends StatelessWidget {
             icon: const Icon(
               Icons.shopping_cart,
             ),
-            onPressed: () {},
+            onPressed: () {
+              cartData.addItem(
+                  productData.id, productData.title, productData.price);
+            },
             color: Theme.of(context).colorScheme.secondary,
           ),
         ),
