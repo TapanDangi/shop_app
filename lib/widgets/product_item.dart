@@ -10,7 +10,7 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Product>(context, listen: false);
+    final productData = Provider.of<Product>(context);
     final cartData = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
       //forces the child widget to wrap into a certain shape
@@ -18,13 +18,13 @@ class ProductItem extends StatelessWidget {
       child: GridTile(
         footer: GridTileBar(
           title: Text(
-            '${productData.price}',
+            productData.title,
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.black54,
           leading: IconButton(
             icon: Icon(
-              productData.isFavorite ? Icons.favorite : Icons.favorite_outline,
+              productData.isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
             onPressed: () {
               productData.toggleFavorite();
