@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/cart_item.dart';
+import '../provider/orders.dart';
 import '../provider/cart.dart' show Cart;
 //this tells flutter that we are only interested in Cart class so others are not imported
 
@@ -44,7 +45,13 @@ class CartScreen extends StatelessWidget {
                   const Spacer(),
                   //takes all the available space for itself
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Provider.of<Orders>(context, listen: false).addOrder(
+                        cartData.items.values.toList(),
+                        cartData.totalAmount,
+                      );
+                      cartData.clearCart();
+                    },
                     child: const Text('ORDER NOW!'),
                   ),
                 ],
