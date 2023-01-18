@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../screens/user_products_screen.dart';
 import '../screens/orders_screen.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -14,7 +15,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Hello Friend!'),
             automaticallyImplyLeading: false,
           ),
-          const Divider(thickness: 3),
+          const Divider(thickness: 2),
           //It is a horizontal line.
           ListTile(
             leading: const Icon(Icons.shop),
@@ -23,7 +24,7 @@ class AppDrawer extends StatelessWidget {
               Navigator.of(context).pushReplacementNamed('/');
             },
           ),
-          const Divider(thickness: 3),
+          const Divider(thickness: 2),
           ListTile(
             leading: const Icon(Icons.payment),
             title: const Text('Orders'),
@@ -32,6 +33,16 @@ class AppDrawer extends StatelessWidget {
                   .pushReplacementNamed(OrdersScreen.routeName);
             },
           ),
+          const Divider(thickness: 2),
+          ListTile(
+            leading: const Icon(Icons.edit_note),
+            title: const Text('Manage Products'),
+            onTap: () {
+              Navigator.of(context)
+                  .pushReplacementNamed(UserProductsScreen.routeName);
+            },
+          ),
+          const Divider(thickness: 2),
         ],
       ),
     );
