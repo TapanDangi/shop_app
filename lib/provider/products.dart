@@ -57,12 +57,33 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  void addProduct() {
-    //_items.add();
+  void addProduct(Product product) {
+    final newProduct = Product(
+      id: DateTime.now().toString(),
+      title: product.title,
+      description: product.description,
+      imageUrl: product.imageUrl,
+      price: product.price,
+    );
+    _items.insert(0, newProduct);
+    //the index 0 adds the item to the beginning of the list.
     notifyListeners();
     //this method is given by ChangeNotifier mixin.
     //this establishes a communication channel between this class and widgets
     //that are interested in the updates we did.
     //The widgets that are listening to this class are then rebuilt to get the latest data.
+  }
+
+  void updateProduct(String id, Product updatedProducted) {
+    final prodIndex = _items.indexWhere((prod) => prod.id == id);
+    if (prodIndex >= 0) {
+      _items[prodIndex] = updatedProducted;
+      notifyListeners();
+    }
+  }
+
+  void deleteProduct(String id) {
+    _items.removeWhere((prod) => prod.id == id);
+    notifyListeners();
   }
 }
