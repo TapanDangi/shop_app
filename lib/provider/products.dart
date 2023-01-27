@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import './product.dart';
 
@@ -58,6 +61,24 @@ class Products with ChangeNotifier {
   }
 
   void addProduct(Product product) {
+    final url = Uri.https(
+        'flutter-shop-app-566b5-default-rtdb.firebaseio.com', '/products.json');
+    //the first part is the authority which is basically the firebase project link.
+    //the second part is the unencoded path we want to create.
+    http.post(
+      url,
+      //this sends a post request to the specified url.
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'price': product.price,
+        'isFavorite': product.isFavorite,
+      }),
+      //body argument allows us to define the request body which is the data that
+      //gets attached to the request.
+      //We need to encode the data into json format to pass it to the body argument.
+    );
     final newProduct = Product(
       id: DateTime.now().toString(),
       title: product.title,

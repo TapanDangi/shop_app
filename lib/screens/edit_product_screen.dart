@@ -238,7 +238,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   if (value!.isEmpty) {
                     return 'Please provide a description';
                   }
-                  if (value.length < 20) {
+                  if (value.length < 10) {
                     return 'Description should be at least 20 characters long';
                   }
                   return null;
