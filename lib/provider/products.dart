@@ -60,12 +60,13 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  void addProduct(Product product) {
+  Future<void> addProduct(Product product) {
     final url = Uri.https(
         'flutter-shop-app-566b5-default-rtdb.firebaseio.com', '/products.json');
     //the first part is the authority which is basically the firebase project link.
     //the second part is the unencoded path we want to create.
-    http.post(
+    return http
+        .post(
       url,
       //this sends a post request to the specified url.
       body: json.encode({
@@ -78,21 +79,31 @@ class Products with ChangeNotifier {
       //body argument allows us to define the request body which is the data that
       //gets attached to the request.
       //We need to encode the data into json format to pass it to the body argument.
-    );
-    final newProduct = Product(
-      id: DateTime.now().toString(),
-      title: product.title,
-      description: product.description,
-      imageUrl: product.imageUrl,
-      price: product.price,
-    );
-    _items.insert(0, newProduct);
-    //the index 0 adds the item to the beginning of the list.
-    notifyListeners();
-    //this method is given by ChangeNotifier mixin.
-    //this establishes a communication channel between this class and widgets
-    //that are interested in the updates we did.
-    //The widgets that are listening to this class are then rebuilt to get the latest data.
+    )
+        .then((response) {
+      final newProduct = Product(
+        id: json.decode(response.body)['name'],
+        //this returns a unique cryptic id stored in firebase server by decoding
+        //json file into dart readable code often a map.
+        title: product.title,
+        description: product.description,
+        imageUrl: product.imageUrl,
+        price: product.price,
+      );
+      _items.insert(0, newProduct);
+      //the index 0 adds the item to the beginning of the list.
+      notifyListeners();
+      //this method is given by ChangeNotifier mixin.
+      //this establishes a communication channel between this class and widgets
+      //that are interested in the updates we did.
+      //The widgets that are listening to this class are then rebuilt to get the latest data.
+    })
+        //then contains a function which will execute once we have a response.
+        //here, the function inside then() method is executed once the post is done.
+        //In short, the object is created after the data is saved on backend.
+        .catchError((error) {
+      throw error;
+    });
   }
 
   void updateProduct(String id, Product updatedProducted) {

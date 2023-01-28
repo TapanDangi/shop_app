@@ -40,6 +40,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   //these are the initial values for the TextFormFields in the Form.
 
   var _isInit = true;
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -120,13 +121,44 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _form.currentState!.save();
     //save() method is provided by flutter to save the form.
     //It will be accessed if isValid returns true.
+    setState(() {
+      _isLoading = true;
+    });
     if (_editedProduct.id != '') {
       Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.of(context).pop();
+      //here, the screen is popped immediately because we are not sending http request.
     } else {
-      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+      Provider.of<Products>(context, listen: false)
+          .addProduct(_editedProduct)
+          .catchError((error) {
+        return showDialog<Null>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('An error occurred!'),
+            content: const Text('Something went wrong!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Okay!'),
+              ),
+            ],
+          ),
+        );
+      }).then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.of(context).pop();
+        //here, the screen is popped only after new product is added.
+      });
     }
-    Navigator.of(context).pop();
   }
   //this function triggers a method on every TextFormField which allows us to take
   //the values entered in the field and do whatever you want with it.
@@ -143,172 +175,82 @@ class _EditProductScreenState extends State<EditProductScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _form,
-          //key argument establishes the connection to the _saveForm() function
-          //using the GlobalKey.
-          //Now, we can use the _form property to interact with the state managed
-          //by Form() widget.
-          //It means that the contents of Form() widget can be accessed from outside
-          //using the _form GlobalKey.
-          child: ListView(
-            children: [
-              TextFormField(
-                initialValue: _initValues['title'],
-                //TextFormField automatically connects to the Form widget to get input.
-                decoration: const InputDecoration(labelText: 'Title'),
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) {
-                  //onFieldSubmitted() tells flutter what to do when the bottom
-                  //right button in the keyboard is pressed.
-                  FocusScope.of(context).requestFocus(_priceFocusNode);
-                  //this tells flutter that when the submit button is clicked,
-                  //we want to focus on the element with this FocusNode specified.
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please provide a title';
-                    //if a string is returned, it is automatically treated as an error message.
-                  }
-                  return null;
-                  //returning a null is treated as having no problems in the input.
-                },
-                //the value we get is the value currently entered in the TextFormField.
-                //it is executed when we call a specific validate method.
-                onSaved: (value) {
-                  _editedProduct = Product(
-                    id: _editedProduct.id,
-                    isFavorite: _editedProduct.isFavorite,
-                    title: value as String,
-                    description: _editedProduct.description,
-                    imageUrl: _editedProduct.imageUrl,
-                    price: _editedProduct.price,
-                  );
-                  //Here, we have to create a new product every time because the
-                  //fields of the Product() are final(immutable).
-                },
-                //this executed when _saveForm() is executed. Here, our plan is
-                //to update the _editedProduct() whenever _saveForm() is called.
-              ),
-              TextFormField(
-                initialValue: _initValues['price'],
-                decoration: const InputDecoration(labelText: 'Price'),
-                textInputAction: TextInputAction.next,
-                keyboardType: TextInputType.number,
-                focusNode: _priceFocusNode,
-                //this defines the name of the FocusNode for this TextField.
-                //It can be accessed by other TextFields to transfer input control
-                //to this field.
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_descriptionFocusNode);
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please provide a value';
-                  }
-                  if (double.tryParse(value) == null) {
-                    //Unlike parse, tryParse returns null if it has invalid input.
-                    return 'Please enter a valid number';
-                  }
-                  if (double.parse(value) <= 0) {
-                    return 'Please enter a positive number';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _editedProduct = Product(
-                    id: _editedProduct.id,
-                    isFavorite: _editedProduct.isFavorite,
-                    title: _editedProduct.title,
-                    description: _editedProduct.description,
-                    imageUrl: _editedProduct.imageUrl,
-                    price: double.parse(value as String),
-                  );
-                },
-              ),
-              TextFormField(
-                initialValue: _initValues['description'],
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-                keyboardType: TextInputType.multiline,
-                focusNode: _descriptionFocusNode,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please provide a description';
-                  }
-                  if (value.length < 10) {
-                    return 'Description should be at least 20 characters long';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _editedProduct = Product(
-                    id: _editedProduct.id,
-                    isFavorite: _editedProduct.isFavorite,
-                    title: _editedProduct.title,
-                    description: value as String,
-                    imageUrl: _editedProduct.imageUrl,
-                    price: _editedProduct.price,
-                  );
-                },
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    margin: const EdgeInsets.only(
-                      top: 8,
-                      right: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    child: _imageUrlController.text.isEmpty
-                        ? const Text(
-                            'Enter a URL',
-                            textAlign: TextAlign.center,
-                          )
-                        : FittedBox(
-                            alignment: Alignment.center,
-                            fit: BoxFit.fill,
-                            child: Image.network(_imageUrlController.text),
-                          ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(labelText: 'Image URL'),
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
-                      controller: _imageUrlController,
-                      //here, controller is used because we have to get the image
-                      //before the form is submitted.
-                      //If we have to get the value after the form is submitted,
-                      //we don't need to use controller.
-                      focusNode: _imageUrlFocusNode,
-                      //it keeps track of wwhether this field is focused or not.
-                      //So, we only need to listen to the changes in focus.
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _form,
+                //key argument establishes the connection to the _saveForm() function
+                //using the GlobalKey.
+                //Now, we can use the _form property to interact with the state managed
+                //by Form() widget.
+                //It means that the contents of Form() widget can be accessed from outside
+                //using the _form GlobalKey.
+                child: ListView(
+                  children: [
+                    TextFormField(
+                      initialValue: _initValues['title'],
+                      //TextFormField automatically connects to the Form widget to get input.
+                      decoration: const InputDecoration(labelText: 'Title'),
+                      textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) {
-                        _saveForm();
+                        //onFieldSubmitted() tells flutter what to do when the bottom
+                        //right button in the keyboard is pressed.
+                        FocusScope.of(context).requestFocus(_priceFocusNode);
+                        //this tells flutter that when the submit button is clicked,
+                        //we want to focus on the element with this FocusNode specified.
                       },
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please enter an image URL';
+                          return 'Please provide a title';
+                          //if a string is returned, it is automatically treated as an error message.
                         }
-                        if (!value.startsWith('http') &&
-                            !value.startsWith('https')) {
-                          return 'Please enter a valid URL';
+                        return null;
+                        //returning a null is treated as having no problems in the input.
+                      },
+                      //the value we get is the value currently entered in the TextFormField.
+                      //it is executed when we call a specific validate method.
+                      onSaved: (value) {
+                        _editedProduct = Product(
+                          id: _editedProduct.id,
+                          isFavorite: _editedProduct.isFavorite,
+                          title: value as String,
+                          description: _editedProduct.description,
+                          imageUrl: _editedProduct.imageUrl,
+                          price: _editedProduct.price,
+                        );
+                        //Here, we have to create a new product every time because the
+                        //fields of the Product() are final(immutable).
+                      },
+                      //this executed when _saveForm() is executed. Here, our plan is
+                      //to update the _editedProduct() whenever _saveForm() is called.
+                    ),
+                    TextFormField(
+                      initialValue: _initValues['price'],
+                      decoration: const InputDecoration(labelText: 'Price'),
+                      textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.number,
+                      focusNode: _priceFocusNode,
+                      //this defines the name of the FocusNode for this TextField.
+                      //It can be accessed by other TextFields to transfer input control
+                      //to this field.
+                      onFieldSubmitted: (_) {
+                        FocusScope.of(context)
+                            .requestFocus(_descriptionFocusNode);
+                      },
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please provide a value';
                         }
-                        if (!value.endsWith('.png') &&
-                            !value.endsWith('.jpg') &&
-                            !value.endsWith('.jpeg')) {
-                          return 'Please enter a valid image extension';
+                        if (double.tryParse(value) == null) {
+                          //Unlike parse, tryParse returns null if it has invalid input.
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(value) <= 0) {
+                          return 'Please enter a positive number';
                         }
                         return null;
                       },
@@ -318,18 +260,116 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           isFavorite: _editedProduct.isFavorite,
                           title: _editedProduct.title,
                           description: _editedProduct.description,
-                          imageUrl: value as String,
+                          imageUrl: _editedProduct.imageUrl,
+                          price: double.parse(value as String),
+                        );
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: _initValues['description'],
+                      decoration:
+                          const InputDecoration(labelText: 'Description'),
+                      maxLines: 3,
+                      keyboardType: TextInputType.multiline,
+                      focusNode: _descriptionFocusNode,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please provide a description';
+                        }
+                        if (value.length < 10) {
+                          return 'Description should be at least 10 characters long';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _editedProduct = Product(
+                          id: _editedProduct.id,
+                          isFavorite: _editedProduct.isFavorite,
+                          title: _editedProduct.title,
+                          description: value as String,
+                          imageUrl: _editedProduct.imageUrl,
                           price: _editedProduct.price,
                         );
                       },
                     ),
-                  ),
-                ],
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          margin: const EdgeInsets.only(
+                            top: 8,
+                            right: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 1,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          child: _imageUrlController.text.isEmpty
+                              ? const Text(
+                                  'Enter a URL',
+                                  textAlign: TextAlign.center,
+                                )
+                              : FittedBox(
+                                  alignment: Alignment.center,
+                                  fit: BoxFit.fill,
+                                  child:
+                                      Image.network(_imageUrlController.text),
+                                ),
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            decoration:
+                                const InputDecoration(labelText: 'Image URL'),
+                            keyboardType: TextInputType.url,
+                            textInputAction: TextInputAction.done,
+                            controller: _imageUrlController,
+                            //here, controller is used because we have to get the image
+                            //before the form is submitted.
+                            //If we have to get the value after the form is submitted,
+                            //we don't need to use controller.
+                            focusNode: _imageUrlFocusNode,
+                            //it keeps track of wwhether this field is focused or not.
+                            //So, we only need to listen to the changes in focus.
+                            onFieldSubmitted: (_) {
+                              _saveForm();
+                            },
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter an image URL';
+                              }
+                              if (!value.startsWith('http') &&
+                                  !value.startsWith('https')) {
+                                return 'Please enter a valid URL';
+                              }
+                              if (!value.endsWith('.png') &&
+                                  !value.endsWith('.jpg') &&
+                                  !value.endsWith('.jpeg')) {
+                                return 'Please enter a valid image extension';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _editedProduct = Product(
+                                id: _editedProduct.id,
+                                isFavorite: _editedProduct.isFavorite,
+                                title: _editedProduct.title,
+                                description: _editedProduct.description,
+                                imageUrl: value as String,
+                                price: _editedProduct.price,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
