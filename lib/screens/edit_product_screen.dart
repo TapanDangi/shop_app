@@ -109,7 +109,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
   //this function is executed whenever the focus in the imageUrl field changes.
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     final isValid = _form.currentState!.validate();
     //validate() method is provided by flutter to trigger all the validators in the
     //TextFormField. It can be used if autovalidate is set to false.
@@ -125,18 +125,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isLoading = true;
     });
     if (_editedProduct.id != '') {
-      Provider.of<Products>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
-      //here, the screen is popped immediately because we are not sending http request.
     } else {
-      Provider.of<Products>(context, listen: false)
-          .addProduct(_editedProduct)
-          .catchError((error) {
-        return showDialog<Null>(
+      try {
+        await Provider.of<Products>(context, listen: false)
+            .addProduct(_editedProduct);
+      } catch (error) {
+        await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('An error occurred!'),
@@ -151,14 +147,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      }).then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
-        //here, the screen is popped only after new product is added.
-      });
+      }
     }
+    setState(() {
+      _isLoading = false;
+    });
+    Navigator.of(context).pop();
   }
   //this function triggers a method on every TextFormField which allows us to take
   //the values entered in the field and do whatever you want with it.

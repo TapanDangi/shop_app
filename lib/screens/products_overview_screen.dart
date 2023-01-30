@@ -5,6 +5,7 @@ import './cart_screen.dart';
 import '../widgets/products_grid.dart';
 import '../widgets/badge.dart';
 import '../provider/cart.dart';
+import '../provider/products.dart';
 import '../widgets/app_drawer.dart';
 
 enum FilterOptions {
@@ -21,6 +22,29 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+        //then() method is used here because aysnc and await should not be used in
+        //initState or didChangeDependencies as they only return void but aysnc return Future.
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    //_isInit is created so that didChangeDependencies runs only once when it is running for the first time.
+    //After that it is changed to false so it never runs again.
+    super.didChangeDependencies();
+  }
+  //this is used because provider class cannot be used in initState.
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +96,9 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: ProductsGrid(showFavorites: _showOnlyFavorites),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ProductsGrid(showFavorites: _showOnlyFavorites),
     );
   }
 }
