@@ -46,6 +46,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   }
   //this is used because provider class cannot be used in initState.
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +102,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       drawer: const AppDrawer(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ProductsGrid(showFavorites: _showOnlyFavorites),
+          : RefreshIndicator(
+              onRefresh: () => _refreshProducts(context),
+              child: ProductsGrid(showFavorites: _showOnlyFavorites),
+            ),
     );
   }
 }

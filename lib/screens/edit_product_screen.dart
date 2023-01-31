@@ -110,6 +110,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   //this function is executed whenever the focus in the imageUrl field changes.
 
   Future<void> _saveForm() async {
+    final navigate = Navigator.of(context);
     final isValid = _form.currentState!.validate();
     //validate() method is provided by flutter to trigger all the validators in the
     //TextFormField. It can be used if autovalidate is set to false.
@@ -140,7 +141,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  navigate.pop();
                 },
                 child: const Text('Okay!'),
               ),
@@ -152,7 +153,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() {
       _isLoading = false;
     });
-    Navigator.of(context).pop();
+    navigate.pop();
   }
   //this function triggers a method on every TextFormField which allows us to take
   //the values entered in the field and do whatever you want with it.
