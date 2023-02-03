@@ -69,21 +69,26 @@ class Products with ChangeNotifier {
       final response = await http.get(url);
       //http.get() is used to fetch data from the server.
       final List<Product> loadedProducts = [];
+      if (json.decode(response.body) == null) {
+        return;
+      }
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       //The extracted data is type casted so that we can use various methods on
       //it which are only available on Maps.
       extractedData.forEach((prodId, prodData) {
         //forEach method runs for every entry in the map.
-        loadedProducts.add(Product(
+        loadedProducts.add(
           //every entry in the map is added to the loadedProducts List with their
           //different fields specified below.
-          id: prodId,
-          title: prodData['title'],
-          description: prodData['description'],
-          price: prodData['price'],
-          imageUrl: prodData['imageUrl'],
-          isFavorite: prodData['isFavorite'],
-        ));
+          Product(
+            id: prodId,
+            title: prodData['title'],
+            description: prodData['description'],
+            price: prodData['price'],
+            imageUrl: prodData['imageUrl'],
+            isFavorite: prodData['isFavorite'],
+          ),
+        );
       });
       _items = loadedProducts;
       notifyListeners();

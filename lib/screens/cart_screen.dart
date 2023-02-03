@@ -44,20 +44,7 @@ class CartScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   //takes all the available space for itself
-                  TextButton(
-                    onPressed: () {
-                      final orderData =
-                          Provider.of<Orders>(context, listen: false);
-                      if (cartData.totalAmount > 0.0) {
-                        orderData.addOrder(
-                          cartData.items.values.toList(),
-                          cartData.totalAmount,
-                        );
-                        cartData.clearCart();
-                      }
-                    },
-                    child: const Text('ORDER NOW!'),
-                  ),
+                  OrderWidget(cartData: cartData),
                 ],
               ),
             ),
@@ -80,6 +67,42 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class OrderWidget extends StatefulWidget {
+  const OrderWidget({Key? key, required this.cartData}) : super(key: key);
+
+  final Cart cartData;
+
+  @override
+  State<OrderWidget> createState() => _OrderWidgetState();
+}
+
+class _OrderWidgetState extends State<OrderWidget> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: (widget.cartData.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              await Provider.of<Orders>(context, listen: false).addOrder(
+                widget.cartData.items.values.toList(),
+                widget.cartData.totalAmount,
+              );
+              setState(() {
+                _isLoading = false;
+              });
+              widget.cartData.clearCart();
+            },
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : const Text('ORDER NOW!'),
     );
   }
 }
