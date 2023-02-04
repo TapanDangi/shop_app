@@ -15,37 +15,56 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  var _isLoading = false;
-  @override
-  void initState() {
-    Future.delayed(Duration.zero).then((_) async {
-      setState(() {
-        _isLoading = true;
-      });
-      await Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
-      setState(() {
-        _isLoading = false;
-      });
-    });
-    //this function is executed in the Future with a delay of the duration set in the parenthesis.
-    //then() function is executed after the said duration is passed.
-    super.initState();
+  late Future _ordersFuture;
+
+  Future _obtainOrdersFuture() {
+    return Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
   }
 
   @override
+  void initState() {
+    _ordersFuture = _obtainOrdersFuture();
+    super.initState();
+  }
+  //_ordersFuture and _obtainOrdersFuture are created instead of directly calling
+  //provider in the widget tree so that the orders are not fetched repeatedly and create
+  //unnecessary Futures everytime the widget rebuilds.
+
+  @override
   Widget build(BuildContext context) {
-    final orderData = Provider.of<Orders>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Orders!'),
       ),
       drawer: const AppDrawer(),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemBuilder: (ctx, i) => OrderItem(order: orderData.orders[i]),
-              itemCount: orderData.orders.length,
-            ),
+      body: FutureBuilder(
+        //this is the best alernative to fetch data and show a loading spinner.
+        //we don't need to rebuild the widget tree just beacuse loading state changes.
+        future: _ordersFuture,
+        //future parameter takes a Future as an argument from where it gets its data
+        builder: (ctx, dataSnapshot) {
+          //builder method takes a snapshot of current state of the function
+          if (dataSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            if (dataSnapshot.error == null) {
+              return Consumer<Orders>(builder: (ctx, orderData, child) {
+                //we use consumer here because using provider in the whole build method
+                //may result in an infinite loop. Everytime fetchAndSetOrders() is called,
+                //it rebuilds the screen resulting in another instance of Provider executing.
+                return ListView.builder(
+                  itemBuilder: (ctx, i) =>
+                      OrderItem(order: orderData.orders[i]),
+                  itemCount: orderData.orders.length,
+                );
+              });
+            }
+            return const Center(
+              child: Text('An error occurred!'),
+            );
+          }
+        },
+      ),
     );
   }
 }
