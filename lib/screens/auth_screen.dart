@@ -3,8 +3,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-enum AuthMode { signup, login }
+import '../provider/auth.dart';
+import '../models/http_exception.dart';
+
+enum AuthMode {
+  signup,
+  login,
+}
 
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -104,7 +111,25 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('An Error Occurred!'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Okay'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       // Invalid!
       return;
@@ -113,10 +138,40 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.login) {
-      // Log user in
-    } else {
-      // Sign user up
+    try {
+      if (_authMode == AuthMode.login) {
+        // Log user in
+        await Provider.of<Auth>(context, listen: false).login(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      } else {
+        // Sign user up
+        await Provider.of<Auth>(context, listen: false).signup(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      }
+    } on HttpException catch (error) {
+      //on keyword is used to check if we got a specific type of error
+      //here, we want to specify HttpException that we use with on keyword
+      var errorMessage = 'Authentication Failed!';
+      if (error.toString().contains('EMAIL_EXISTS')) {
+        errorMessage = 'This email address already exists!';
+      } else if (error.toString().contains('INVALID_EMAIL')) {
+        errorMessage = 'This is not a valid email!';
+      } else if (error.toString().contains('WEAK_PASSWORD')) {
+        errorMessage = 'This password is too weak!';
+      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+        errorMessage = 'Could not find a user with that email!';
+      } else if (error.toString().contains('INVALID_PASSWORD')) {
+        errorMessage = 'Invalid Password!';
+      }
+      _showErrorDialog(errorMessage);
+    } catch (error) {
+      //for checking errors other than HttpException errors as they are mentioned above
+      const errorMessage = 'Could not Authenticate! Please try again later.';
+      _showErrorDialog(errorMessage);
     }
     setState(() {
       _isLoading = false;
@@ -209,7 +264,7 @@ class _AuthCardState extends State<AuthCard> {
                     ),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 30.0, vertical: 8.0),
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
                     textColor: Theme.of(context).primaryTextTheme.button!.color,
                     child:
                         Text(_authMode == AuthMode.login ? 'LOGIN' : 'SIGN UP'),
@@ -219,7 +274,7 @@ class _AuthCardState extends State<AuthCard> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  textColor: Theme.of(context).primaryColor,
+                  textColor: Theme.of(context).colorScheme.primary,
                   child: Text(
                       '${_authMode == AuthMode.login ? 'SIGNUP' : 'LOGIN'} INSTEAD'),
                 ),
