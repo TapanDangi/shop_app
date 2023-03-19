@@ -6,9 +6,25 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
-  late String _token;
-  late DateTime _expiryDate;
-  late String _userId;
+  String? _token;
+  DateTime? _expiryDate;
+  String? _userId;
+
+  bool get isAuth {
+    return token != null;
+  }
+  //returns true meaning we have a token.
+  //returns false meaningtoken is null.
+
+  String? get token {
+    if (_expiryDate != null &&
+        _token != null &&
+        _expiryDate!.isAfter(DateTime.now())) {
+      return _token;
+    }
+    return null;
+  }
+  //tells us whether we have a available token or not within its expiryDate and returns the token
 
   static const param = {
     'key': 'AIzaSyCbu7tWhw0tcRQNz3q5kKZFcPjkhecpugc',
@@ -34,6 +50,19 @@ class Auth with ChangeNotifier {
         //means that an error exists
         throw HttpException(responseData['error']['message']);
       }
+      //if an error is not encountered, then
+      _token = responseData['idToken'];
+      _userId = responseData['localId'];
+      _expiryDate = DateTime.now().add(
+        Duration(
+          seconds: int.parse(
+            responseData['expiresIn'],
+          ),
+          //responseData is String but seconds arguments takes an int type.
+          //So, we have to parse the data to convert it to String.
+        ),
+      );
+      notifyListeners();
     } catch (error) {
       rethrow;
     }
