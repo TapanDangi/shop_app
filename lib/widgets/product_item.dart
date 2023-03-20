@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../screens/product_detail_screen.dart';
 import '../provider/product.dart';
 import '../provider/cart.dart';
+import '../provider/auth.dart';
 
 class ProductItem extends StatelessWidget {
   const ProductItem({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final productData = Provider.of<Product>(context);
     final cartData = Provider.of<Cart>(context, listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
     return ClipRRect(
       //forces the child widget to wrap into a certain shape
       borderRadius: BorderRadius.circular(10),
@@ -27,7 +29,7 @@ class ProductItem extends StatelessWidget {
               productData.isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
             onPressed: () {
-              productData.toggleFavorite();
+              productData.toggleFavorite(authData.token!);
             },
             color: Theme.of(context).colorScheme.secondary,
           ),

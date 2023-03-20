@@ -12,6 +12,12 @@ class Products with ChangeNotifier {
   //then we get the direct access to the _items list and we can modify it
   //from anywhere else. So it is put as a private object.
 
+  String authToken;
+
+  Products(this.authToken, this._items);
+  //this._items is initialised so that we don't lose our data whenever a new instance
+  //of Products() is created or the Products() class Provider is rebuilt.
+
   List<Product> get items {
     return [..._items];
     //a copy of _items class is returned because we don't want to change the
@@ -24,13 +30,22 @@ class Products with ChangeNotifier {
     return _items.where((element) => element.isFavorite).toList();
   }
 
+  void update(String token) {
+    authToken = token;
+  }
+
   Product findById(String id) {
     return _items.firstWhere((element) => element.id == id);
   }
 
   Future<void> fetchAndSetProducts() async {
     final url = Uri.https(
-        'flutter-shop-app-566b5-default-rtdb.firebaseio.com', '/products.json');
+      'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
+      '/products.json',
+      {
+        'auth': authToken,
+      },
+    );
     try {
       final response = await http.get(url);
       //http.get() is used to fetch data from the server.
@@ -67,7 +82,12 @@ class Products with ChangeNotifier {
     //adding async to a method automatically wraps all the encapsulated code in a Future.
     //All the code is wrapped in the future and the future is returned automatically.
     final url = Uri.https(
-        'flutter-shop-app-566b5-default-rtdb.firebaseio.com', '/products.json');
+      'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
+      '/products.json',
+      {
+        'auth': authToken,
+      },
+    );
     //the first part is the authority which is basically the firebase project link.
     //the second part is the unencoded path we want to create.
     try {
@@ -114,8 +134,12 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
       final url = Uri.https(
-          'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
-          '/products/$id.json');
+        'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
+        '/products/$id.json',
+        {
+          'auth': authToken,
+        },
+      );
       await http.patch(
         url,
         body: json.encode({
@@ -135,8 +159,13 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    final url = Uri.https('flutter-shop-app-566b5-default-rtdb.firebaseio.com',
-        '/products/$id.json');
+    final url = Uri.https(
+      'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
+      '/products/$id.json',
+      {
+        'auth': authToken,
+      },
+    );
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     //this gives us the index of the product we want to remove.
     Product? existingProduct = _items[existingProductIndex];
