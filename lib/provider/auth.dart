@@ -26,6 +26,10 @@ class Auth with ChangeNotifier {
   }
   //tells us whether we have a available token or not within its expiryDate and returns the token
 
+  String? get userId {
+    return _userId;
+  }
+
   static const param = {
     'key': 'AIzaSyCbu7tWhw0tcRQNz3q5kKZFcPjkhecpugc',
   };

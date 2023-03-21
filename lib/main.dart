@@ -34,9 +34,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<Auth, Products>(
           //first generic argument is the type it depends on i.e. Auth()
           //second generic argument is the type it provides i.e. Products()
-          create: (ctx) => Products('', []),
+          create: (ctx) => Products('', '', []),
           update: (ctx, auth, previousProducts) => Products(
             auth.token!,
+            auth.userId!,
             previousProducts == null ? [] : previousProducts.items,
             //when it is first loaded, we have no items. So, previousProducts is null at that time.
             //so, if we have no previousProducts then we initialise it with an empty array

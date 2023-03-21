@@ -12,9 +12,10 @@ class Products with ChangeNotifier {
   //then we get the direct access to the _items list and we can modify it
   //from anywhere else. So it is put as a private object.
 
-  String authToken;
+  final String authToken;
+  final String userId;
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this.userId, this._items);
   //this._items is initialised so that we don't lose our data whenever a new instance
   //of Products() is created or the Products() class Provider is rebuilt.
 
@@ -30,32 +31,48 @@ class Products with ChangeNotifier {
     return _items.where((element) => element.isFavorite).toList();
   }
 
-  void update(String token) {
-    authToken = token;
-  }
-
   Product findById(String id) {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url = Uri.https(
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    var param = {
+      'auth': authToken,
+    };
+    var filterParam = {
+      'auth': authToken,
+      'orderBy': '"creatorId"',
+      'equalTo': '"$userId"',
+      //this tells firebase that we want to filter by creatorId and only when it is
+      //equal to your userId. Only these entries should be returned.
+      //To make this work, we have to configure a index in firebase Rules.
+    };
+    final filterString = filterByUser ? filterParam : param;
+    var url = Uri.https(
       'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
       '/products.json',
-      {
-        'auth': authToken,
-      },
+      filterString,
     );
+    //this url overwrites the first url because we only need the first url once.
     try {
       final response = await http.get(url);
       //http.get() is used to fetch data from the server.
-      final List<Product> loadedProducts = [];
-      if (json.decode(response.body) == null) {
-        return;
-      }
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       //The extracted data is type casted so that we can use various methods on
       //it which are only available on Maps.
+      if (json.decode(response.body) == null) {
+        return;
+      }
+      url = Uri.https(
+        'flutter-shop-app-566b5-default-rtdb.firebaseio.com',
+        '/userFavorites/$userId.json',
+        {
+          'auth': authToken,
+        },
+      );
+      final favoriteResponse = await http.get(url);
+      final favoriteData = json.decode(favoriteResponse.body);
+      final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
         //forEach method runs for every entry in the map.
         loadedProducts.add(
@@ -67,7 +84,12 @@ class Products with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite'],
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false,
+            //this checks to find if the favoriteData[prodId] exists or not.
+            // ?? operator checks if the value before that is null.
+            //if it is null, then it returns the value after the operator,
+            //otherwise it returns the value before the operator.
           ),
         );
       });
@@ -102,7 +124,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          'creatorId': userId,
         }),
         //body argument allows us to define the request body which is the data that
         //gets attached to the request.
