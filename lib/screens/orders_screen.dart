@@ -39,7 +39,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       drawer: const AppDrawer(),
       body: FutureBuilder(
         //this is the best alernative to fetch data and show a loading spinner.
-        //we don't need to rebuild the widget tree just beacuse loading state changes.
+        //we don't need to rebuild the widget tree just because loading state changes.
         future: _ordersFuture,
         //future parameter takes a Future as an argument from where it gets its data
         builder: (ctx, dataSnapshot) {

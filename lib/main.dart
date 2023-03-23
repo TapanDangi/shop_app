@@ -12,6 +12,7 @@ import './screens/product_detail_screen.dart';
 import './screens/user_products_screen.dart';
 import './screens/edit_product_screen.dart';
 import './screens/auth_screen.dart';
+import './screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -36,8 +37,8 @@ class MyApp extends StatelessWidget {
           //second generic argument is the type it provides i.e. Products()
           create: (ctx) => Products('', '', []),
           update: (ctx, auth, previousProducts) => Products(
-            auth.token!,
-            auth.userId!,
+            auth.token ?? '',
+            auth.userId ?? '',
             previousProducts == null ? [] : previousProducts.items,
             //when it is first loaded, we have no items. So, previousProducts is null at that time.
             //so, if we have no previousProducts then we initialise it with an empty array
@@ -55,9 +56,10 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Cart(),
         ),
         ChangeNotifierProxyProvider<Auth, Orders>(
-          create: (ctx) => Orders('', []),
+          create: (ctx) => Orders('', '', []),
           update: (ctx, auth, previousOrders) => Orders(
-            auth.token!,
+            auth.token ?? '',
+            auth.userId ?? '',
             previousOrders == null ? [] : previousOrders.orders,
           ),
         ),
@@ -73,8 +75,16 @@ class MyApp extends StatelessWidget {
             ),
             fontFamily: 'Lato',
           ),
-          home:
-              auth.isAuth ? const ProductsOverviewScreen() : const AuthScreen(),
+          home: auth.isAuth
+              ? const ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, authResultSnapshot) =>
+                      authResultSnapshot.connectionState ==
+                              ConnectionState.waiting
+                          ? const SplashScreen()
+                          : const AuthScreen(),
+                ),
           routes: {
             ProductDetailScreen.routeName: (ctx) => const ProductDetailScreen(),
             CartScreen.routeName: (ctx) => const CartScreen(),
