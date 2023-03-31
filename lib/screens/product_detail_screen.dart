@@ -18,40 +18,59 @@ class ProductDetailScreen extends StatelessWidget {
     //this is done because we only have to change it once when it is first
     //created, and not when any new Products are added.
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loadedProduct.title),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 300,
-              width: double.infinity,
-              child: Image.network(
-                loadedProduct.imageUrl,
-                fit: BoxFit.cover,
+      body: CustomScrollView(
+        //CustomScrollView is similar to SinglChildScrollView with more control given to developer.
+        slivers: [
+          //slivers are the scrollable parts on a screen.
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              //flexibleSpace argument shows the content of the appBar.
+              title: Text(
+                loadedProduct.title,
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Rs ${loadedProduct.price}',
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.grey,
+              background: Hero(
+                //background argument shows what should be on the screen when appbar is expanded.
+                tag: loadedProduct.id,
+                child: Image.network(
+                  loadedProduct.imageUrl,
+                  fit: BoxFit.cover,
+                ),
               ),
+              collapseMode: CollapseMode.parallax,
             ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                loadedProduct.description,
-                textAlign: TextAlign.center,
-                softWrap: true,
-              ),
+          ),
+          SliverList(
+            //SliverList is basically ListView as a part of multiple slivers. We use it in case our ListView
+            //is part of multiple scrollable things on the screen which should scroll independently and
+            //we want to have some special tricks when they scroll.
+            delegate: SliverChildListDelegate(
+              [
+                const SizedBox(height: 10),
+                Text(
+                  'Rs ${loadedProduct.price}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    loadedProduct.description,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
+                ),
+                const SizedBox(height: 1000)
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

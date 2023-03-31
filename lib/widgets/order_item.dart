@@ -19,28 +19,37 @@ class _OrderItemState extends State<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(5),
-      child: Column(
-        children: [
-          ListTile(
-            title: Text('Rs ${(widget.order.amount).toStringAsFixed(2)}'),
-            subtitle: Text(
-              DateFormat('dd/MM/yyyy   hh:mm').format(widget.order.dateTime),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height:
+          _expanded ? min(widget.order.products.length * 20.0 + 120, 200) : 85,
+      child: Card(
+        margin: const EdgeInsets.all(5),
+        child: Column(
+          children: [
+            ListTile(
+              title: Text('Rs ${(widget.order.amount).toStringAsFixed(2)}'),
+              subtitle: Text(
+                DateFormat('dd/MM/yyyy   hh:mm').format(widget.order.dateTime),
+              ),
+              trailing: IconButton(
+                icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                onPressed: () {
+                  setState(() {
+                    _expanded = !_expanded;
+                  });
+                },
+              ),
             ),
-            trailing: IconButton(
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  _expanded = !_expanded;
-                });
-              },
-            ),
-          ),
-          if (_expanded)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-              height: min(widget.order.products.length * 20.0 + 30, 110),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 15,
+                vertical: 4,
+              ),
+              height: _expanded
+                  ? min(widget.order.products.length * 20.0 + 30, 110)
+                  : 0,
               child: ListView.builder(
                 itemExtent: 25,
                 itemBuilder: (ctx, i) => Row(
@@ -65,7 +74,8 @@ class _OrderItemState extends State<OrderItem> {
                 itemCount: widget.order.products.length,
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

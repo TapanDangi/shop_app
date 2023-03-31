@@ -13,6 +13,7 @@ import './screens/user_products_screen.dart';
 import './screens/edit_product_screen.dart';
 import './screens/auth_screen.dart';
 import './screens/splash_screen.dart';
+import './helpers/custom_routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -67,6 +68,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<Auth>(
         //MaterialApp is rebuilt whenever Auth() changes and whenever we call notifylisteners() in there.
         builder: (ctx, auth, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'MyShop',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSwatch(
@@ -74,6 +76,12 @@ class MyApp extends StatelessWidget {
               accentColor: Colors.amber,
             ),
             fontFamily: 'Lato',
+            pageTransitionsTheme: PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CustomPageTransitionBuilder(),
+                TargetPlatform.iOS: CustomPageTransitionBuilder(),
+              },
+            ),
           ),
           home: auth.isAuth
               ? const ProductsOverviewScreen()

@@ -72,9 +72,17 @@ class ProductItem extends StatelessWidget {
               arguments: productData.id,
             );
           },
-          child: Image.network(
-            productData.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            //Hero widget is used between two screens to know which image on the old screen
+            //is to be animated in the new screen using unique tag argument.
+            tag: productData.id,
+            child: FadeInImage(
+              //FadeInImage displays a placeholder while the image is loading with the fading effects.
+              placeholder:
+                  const AssetImage('assets/images/product-placeholder.png'),
+              image: NetworkImage(productData.imageUrl),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),

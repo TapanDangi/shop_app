@@ -344,7 +344,8 @@ class _AuthCardState extends State<AuthCard>
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   textColor: Theme.of(context).colorScheme.primary,
                   child: Text(
-                      '${_authMode == AuthMode.login ? 'SIGNUP' : 'LOGIN'} INSTEAD'),
+                    '${_authMode == AuthMode.login ? 'SIGNUP' : 'LOGIN'} INSTEAD',
+                  ),
                 ),
               ],
             ),
