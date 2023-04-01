@@ -8,7 +8,7 @@ class CustomRoute extends MaterialPageRoute {
           builder: builder!,
           settings: settings,
         );
-  //super is used to forward the builder and setting to the parent class taht is MaterialPageRoute.
+  //super is used to forward the builder and setting to the parent class that is MaterialPageRoute.
 
   @override
   Widget buildTransitions(
